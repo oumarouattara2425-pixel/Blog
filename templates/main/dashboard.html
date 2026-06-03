@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord — ConstructLearn Pro{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Bonjour, {{ current_user.first_name }} 👋</h1>
+      <p class="page-sub">
+        {% if current_user.is_pro %}
+          <span class="badge badge-pro"><i class="ti ti-crown"></i> Abonné Pro</span>
+        {% else %}
+          Compte gratuit ·
+          <a href="{{ url_for('billing.plans') }}" class="link-pro">Passer Pro pour accéder à toutes les formations →</a>
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <!-- Formations en cours -->
+  {% if enrollments %}
+  <section class="section">
+    <h2 class="section-title">Mes formations en cours</h2>
+    <div class="courses-grid">
+      {% for e in enrollments %}
+      <a href="{{ url_for('courses.detail', slug=e.course.slug) }}" class="course-card">
+        <div class="course-thumb" style="background: var(--cat-{{ e.course.category }})">
+          <span class="course-emoji">{{ e.course.emoji }}</span>
+        </div>
+        <div class="course-body">
+          <span class="course-cat">{{ e.course.category_label }}</span>
+          <h3 class="course-title">{{ e.course.title }}</h3>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" style="width: {{ e.progress }}%"></div>
+          </div>
+          <div class="progress-label">{{ e.progress }}% complété</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Formations disponibles -->
+  <section class="section">
+    <h2 class="section-title">
+      {% if enrollments %}Autres formations disponibles{% else %}Formations disponibles{% endif %}
+    </h2>
+    {% if available %}
+    <div class="courses-grid">
+      {% for course in available %}
+        {% if course.id not in enrolled_ids %}
+        <div class="course-card">
+          <div class="course-thumb" style="background: var(--cat-{{ course.category }})">
+            {% if course.thumbnail_url %}
+              <img src="{{ course.thumbnail_url }}" alt="{{ course.title }}" class="course-thumb-img">
+            {% else %}
+              <span class="course-emoji">{{ course.emoji }}</span>
+            {% endif %}
+          </div>
+          <div class="course-body">
+            <span class="course-cat">{{ course.category_label }}</span>
+            <h3 class="course-title">{{ course.title }}</h3>
+            <p class="course-desc">{{ course.description[:100] }}{% if course.description|length > 100 %}…{% endif %}</p>
+            <div class="course-meta">
+              <span><i class="ti ti-clock"></i> {{ course.duration or '—' }}</span>
+              <span><i class="ti ti-video"></i> {{ course.video_count }} vidéos</span>
+            </div>
+            <a href="{{ url_for('courses.detail', slug=course.slug) }}" class="btn btn-outline btn-sm mt-8">
+              Voir la formation
+            </a>
+          </div>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% else %}
+      {% if not current_user.is_pro %}
+      <div class="empty-state">
+        <div class="empty-icon">🔒</div>
+        <h3>Débloquez toutes les formations</h3>
+        <p>Abonnez-vous Pro pour accéder à l'intégralité du catalogue Géotechnique, BIM et Travaux Publics.</p>
+        <a href="{{ url_for('billing.plans') }}" class="btn btn-primary">Voir les offres</a>
+      </div>
+      {% endif %}
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

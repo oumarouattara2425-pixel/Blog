@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Modifier' if course else 'Nouvelle' }} formation — Admin{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title"><i class="ti ti-settings"></i> Administration</h1>
+  </div>
+
+  <nav class="admin-nav">
+    <a href="{{ url_for('admin.dashboard') }}"        class="admin-nav-item"><i class="ti ti-chart-bar"></i> Dashboard</a>
+    <a href="{{ url_for('admin.courses') }}"           class="admin-nav-item active"><i class="ti ti-books"></i> Formations</a>
+    <a href="{{ url_for('admin.users') }}"             class="admin-nav-item"><i class="ti ti-users"></i> Utilisateurs</a>
+    <a href="{{ url_for('admin.subscriptions') }}"    class="admin-nav-item"><i class="ti ti-credit-card"></i> Abonnements</a>
+    <a href="{{ url_for('admin.payment_settings') }}" class="admin-nav-item"><i class="ti ti-building-bank"></i> Paiement</a>
+  </nav>
+
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="{{ url_for('admin.courses') }}" class="btn btn-ghost btn-sm"><i class="ti ti-arrow-left"></i> Retour</a>
+    <h2 class="section-title" style="margin:0">{{ 'Modifier : ' + course.title if course else 'Nouvelle formation' }}</h2>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr {% if course %}380px{% endif %};gap:24px;align-items:start">
+
+    <!-- Formulaire principal -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Informations de la formation</div></div>
+      <form method="POST" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:16px">
+
+        <div class="form-group">
+          <label class="form-label">Titre *</label>
+          <input type="text" name="title" class="form-input" required
+                 value="{{ course.title if course else '' }}" placeholder="Ex : Mécanique des sols — Fondamentaux">
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Catégorie</label>
+            <select name="category" class="form-input">
+              {% for val, label in [('geo','Géotechnique'),('bim','BIM & Revit'),('tp','Travaux Publics')] %}
+              <option value="{{ val }}" {{ 'selected' if course and course.category == val }}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Emoji</label>
+            <input type="text" name="emoji" class="form-input" maxlength="4"
+                   value="{{ course.emoji if course else '🎓' }}" placeholder="🎓">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-input" rows="4"
+                    placeholder="Présentation du contenu de la formation…" style="resize:vertical">{{ course.description if course else '' }}</textarea>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Durée totale</label>
+            <input type="text" name="duration" class="form-input"
+                   value="{{ course.duration if course else '' }}" placeholder="Ex : 8h30">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Plan requis</label>
+            <select name="plan_required" class="form-input">
+              <option value="free"    {{ 'selected' if course and course.plan_required == 'free' }}>Gratuit</option>
+              <option value="monthly" {{ 'selected' if not course or course.plan_required == 'monthly' }}>Pro (payant)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Vignette (image)</label>
+          {% if course and course.thumbnail_url %}
+            <img src="{{ course.thumbnail_url }}" alt="vignette" style="height:80px;border-radius:8px;margin-bottom:8px;object-fit:cover">
+          {% endif %}
+          <input type="file" name="thumbnail" class="form-input" accept="image/*">
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px">
+          <label class="checkbox-label">
+            <input type="checkbox" name="published" value="1" {{ 'checked' if course and course.published }}>
+            Formation publiée (visible par les membres)
+          </label>
+        </div>
+
+        <div style="display:flex;gap:10px">
+          <button type="submit" class="btn btn-primary">
+            <i class="ti ti-check"></i> {{ 'Enregistrer' if course else 'Créer la formation' }}
+          </button>
+          <a href="{{ url_for('admin.courses') }}" class="btn btn-ghost">Annuler</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Vidéos (seulement en mode édition) -->
+    {% if course %}
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Vidéos ({{ videos|length }})</div>
+          <a href="{{ url_for('admin.video_new', course_id=course.id) }}" class="btn btn-primary btn-sm">
+            <i class="ti ti-plus"></i> Ajouter
+          </a>
+        </div>
+        {% if videos %}
+        <div style="display:flex;flex-direction:column;gap:8px">
+          {% for video in videos %}
+          <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:8px">
+            <div style="width:28px;height:28px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">
+              {{ video.order_num + 1 }}
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ video.title }}</div>
+              <div style="font-size:11px;color:var(--muted)">
+                {{ video.duration or '—' }}
+                {% if video.is_preview %} · <span style="color:var(--success)">Aperçu gratuit</span>{% endif %}
+              </div>
+            </div>
+            <div style="display:flex;gap:4px">
+              <a href="{{ url_for('admin.video_edit', video_id=video.id) }}" class="btn btn-ghost btn-sm" style="padding:4px 8px">
+                <i class="ti ti-pencil"></i>
+              </a>
+              <form method="POST" action="{{ url_for('admin.video_delete', video_id=video.id) }}" style="display:inline">
+                <button type="submit" class="btn btn-danger btn-sm" style="padding:4px 8px"
+                        data-confirm="Supprimer cette vidéo ?">
+                  <i class="ti ti-trash"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p style="font-size:13px;color:var(--muted);text-align:center;padding:16px">
+          Aucune vidéo. Ajoutez-en une pour commencer.
+        </p>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

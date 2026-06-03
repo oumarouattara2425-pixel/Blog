@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Formations — ConstructLearn Pro{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">Formations</h1>
+    <p class="page-sub">Géotechnique · BIM & Revit · Travaux Publics</p>
+  </div>
+
+  <!-- Filtres -->
+  <form method="GET" action="{{ url_for('courses.index') }}" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;align-items:center">
+    <input type="text" name="q" class="form-input" placeholder="Rechercher une formation…" value="{{ q }}" style="max-width:260px">
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      {% for val, label in [('all','Toutes'),('geo','Géotechnique'),('bim','BIM & Revit'),('tp','Travaux Publics')] %}
+      <a href="{{ url_for('courses.index', cat=val, q=q) }}"
+         class="btn btn-sm {% if cat == val %}btn-primary{% else %}btn-ghost{% endif %}">
+        {{ label }}
+      </a>
+      {% endfor %}
+    </div>
+  </form>
+
+  {% if courses %}
+  <div class="courses-grid">
+    {% for course in courses %}
+    <div class="course-card">
+      <div class="course-thumb" style="background: var(--cat-{{ course.category }})">
+        {% if course.thumbnail_url %}
+          <img src="{{ course.thumbnail_url }}" alt="{{ course.title }}" class="course-thumb-img">
+        {% else %}
+          <span class="course-emoji">{{ course.emoji }}</span>
+        {% endif %}
+      </div>
+      <div class="course-body">
+        <span class="course-cat">{{ course.category_label }}</span>
+        <h3 class="course-title">{{ course.title }}</h3>
+        {% if course.description %}
+          <p class="course-desc">{{ course.description[:100] }}{% if course.description|length > 100 %}…{% endif %}</p>
+        {% endif %}
+        <div class="course-meta">
+          <span><i class="ti ti-clock"></i> {{ course.duration or '—' }}</span>
+          <span><i class="ti ti-video"></i> {{ course.video_count }} vidéos</span>
+        </div>
+        {% if course.id in enrolled_ids %}
+          <a href="{{ url_for('courses.detail', slug=course.slug) }}" class="btn btn-success btn-sm mt-8" style="width:100%;justify-content:center">
+            <i class="ti ti-player-play"></i> Continuer
+          </a>
+        {% else %}
+          <a href="{{ url_for('courses.detail', slug=course.slug) }}" class="btn btn-outline btn-sm mt-8" style="width:100%;justify-content:center">
+            Voir la formation
+          </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📚</div>
+    <h3>Aucune formation trouvée</h3>
+    <p>Essayez une autre catégorie ou modifiez votre recherche.</p>
+    <a href="{{ url_for('courses.index') }}" class="btn btn-outline">Voir toutes les formations</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

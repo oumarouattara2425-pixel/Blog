@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Offres d'abonnement — ConstructLearn Pro{% endblock %}
+{% block content %}
+<div class="page-container narrow">
+  <div class="page-header centered">
+    <h1 class="page-title">Choisissez votre plan</h1>
+    <p class="page-sub">Accès illimité à toutes les formations Géotechnique, BIM & Travaux Publics</p>
+  </div>
+
+  <div class="plans-grid">
+    <!-- Plan Gratuit -->
+    <div class="plan-card">
+      <div class="plan-name">Gratuit</div>
+      <div class="plan-price">0 €<span class="plan-period">/mois</span></div>
+      <ul class="plan-features">
+        <li><i class="ti ti-check"></i> Formations d'introduction</li>
+        <li><i class="ti ti-check"></i> Vidéos de prévisualisation</li>
+        <li class="plan-no"><i class="ti ti-x"></i> Formations complètes</li>
+        <li class="plan-no"><i class="ti ti-x"></i> Documents téléchargeables</li>
+        <li class="plan-no"><i class="ti ti-x"></i> Certificats de completion</li>
+      </ul>
+      {% if current_user.is_authenticated %}
+        {% if current_user.plan == 'free' %}
+          <button class="btn btn-outline btn-full" disabled>Plan actuel</button>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-outline btn-full">Commencer gratuit</a>
+      {% endif %}
+    </div>
+
+    <!-- Plan Mensuel -->
+    <div class="plan-card plan-featured">
+      <div class="plan-badge">Populaire</div>
+      <div class="plan-name">Pro Mensuel</div>
+      <div class="plan-price">29 €<span class="plan-period">/mois</span></div>
+      <ul class="plan-features">
+        <li><i class="ti ti-check"></i> <strong>Toutes</strong> les formations</li>
+        <li><i class="ti ti-check"></i> Vidéos HD illimitées</li>
+        <li><i class="ti ti-check"></i> Documents & supports PDF</li>
+        <li><i class="ti ti-check"></i> Certificats de complétion</li>
+        <li><i class="ti ti-check"></i> Résiliation à tout moment</li>
+      </ul>
+      {% if current_user.is_authenticated %}
+        {% if current_user.plan == 'monthly' and current_user.plan_status == 'active' %}
+          <button class="btn btn-primary btn-full" disabled>Plan actuel</button>
+        {% else %}
+          <a href="{{ url_for('billing.checkout', plan='monthly') }}" class="btn btn-primary btn-full">
+            <i class="ti ti-credit-card"></i> S'abonner — 29 €/mois
+          </a>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-full">Commencer</a>
+      {% endif %}
+    </div>
+
+    <!-- Plan Annuel -->
+    <div class="plan-card plan-annual">
+      <div class="plan-badge plan-badge-green">−20%</div>
+      <div class="plan-name">Pro Annuel</div>
+      <div class="plan-price">279 €<span class="plan-period">/an</span></div>
+      <div class="plan-monthly-eq">soit 23,25 €/mois</div>
+      <ul class="plan-features">
+        <li><i class="ti ti-check"></i> Tout le plan Pro Mensuel</li>
+        <li><i class="ti ti-check"></i> <strong>2 mois offerts</strong></li>
+        <li><i class="ti ti-check"></i> Accès aux nouveaux cours en priorité</li>
+        <li><i class="ti ti-check"></i> Support par email prioritaire</li>
+      </ul>
+      {% if current_user.is_authenticated %}
+        {% if current_user.plan == 'annual' and current_user.plan_status == 'active' %}
+          <button class="btn btn-success btn-full" disabled>Plan actuel</button>
+        {% else %}
+          <a href="{{ url_for('billing.checkout', plan='annual') }}" class="btn btn-success btn-full">
+            <i class="ti ti-credit-card"></i> S'abonner — 279 €/an
+          </a>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('auth.register') }}" class="btn btn-success btn-full">Commencer</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="secure-badge">
+    <i class="ti ti-lock"></i> Paiement 100% sécurisé par Stripe · SSL · Résiliation en 1 clic
+  </div>
+
+  {% if current_user.is_authenticated and (current_user.is_pro or current_user.plan_status != 'inactive') %}
+  <div class="portal-link">
+    <a href="{{ url_for('billing.portal') }}">Gérer mon abonnement (portail Stripe) →</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

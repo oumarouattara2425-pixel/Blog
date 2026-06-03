@@ -1,0 +1,27 @@
+# ── Framework Flask ──────────────────────────────────────────
+flask==3.0.3
+flask-sqlalchemy==3.1.1
+flask-login==0.6.3
+flask-migrate==4.0.7
+flask-wtf==1.2.1
+flask-mail==0.10.0
+
+# ── Base de données ──────────────────────────────────────────
+# psycopg2-binary : wheel précompilée, pas de compilation C requise
+psycopg2-binary==2.9.9
+
+# ── Stripe ───────────────────────────────────────────────────
+stripe==9.12.0
+
+# ── Utilitaires Flask ────────────────────────────────────────
+python-dotenv==1.0.1
+werkzeug==3.0.3
+wtforms==3.1.2
+itsdangerous==2.2.0
+
+# ── Serveur WSGI ─────────────────────────────────────────────
+gunicorn==22.0.0
+
+# NOTE : pillow et boto3 retirés — non utilisés dans le code.
+# Si vous avez besoin de traitement d'image plus tard : pillow>=10.4.0
+# Si vous avez besoin de S3 plus tard : boto3>=1.34

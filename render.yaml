@@ -1,0 +1,47 @@
+services:
+  - type: web
+    name: constructlearn-pro
+    runtime: python
+    region: frankfurt
+    plan: free
+    pythonVersion: "3.11.9"
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "gunicorn app:app --workers 2 --bind 0.0.0.0:$PORT --timeout 120"
+    healthCheckPath: /
+
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: constructlearn-db
+          property: connectionString
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_MONTHLY
+        sync: false
+      - key: STRIPE_PRICE_ANNUAL
+        sync: false
+      - key: MAIL_SERVER
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_DEFAULT_SENDER
+        sync: false
+      - key: APP_URL
+        sync: false
+
+databases:
+  - name: constructlearn-db
+    databaseName: constructlearn
+    user: constructlearn
+    region: frankfurt
+    plan: free

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Paramètres paiement — Admin ConstructLearn Pro{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title"><i class="ti ti-settings"></i> Administration</h1>
+  </div>
+
+  <nav class="admin-nav">
+    <a href="{{ url_for('admin.dashboard') }}"        class="admin-nav-item"><i class="ti ti-chart-bar"></i> Dashboard</a>
+    <a href="{{ url_for('admin.courses') }}"           class="admin-nav-item"><i class="ti ti-books"></i> Formations</a>
+    <a href="{{ url_for('admin.users') }}"             class="admin-nav-item"><i class="ti ti-users"></i> Utilisateurs</a>
+    <a href="{{ url_for('admin.subscriptions') }}"    class="admin-nav-item"><i class="ti ti-credit-card"></i> Abonnements</a>
+    <a href="{{ url_for('admin.payment_settings') }}" class="admin-nav-item active"><i class="ti ti-building-bank"></i> Paiement</a>
+  </nav>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
+
+    <!-- Tarifs -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-tag"></i> Tarifs des abonnements</div></div>
+      <form method="POST" style="display:flex;flex-direction:column;gap:16px">
+        <div class="form-group">
+          <label class="form-label">Prix mensuel (€)</label>
+          <input type="number" name="monthly_price" class="form-input" step="0.01" min="0"
+                 value="{{ (ps.monthly_price / 100)|round(2) if ps and ps.monthly_price else 29 }}"
+                 placeholder="29">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prix annuel (€)</label>
+          <input type="number" name="annual_price" class="form-input" step="0.01" min="0"
+                 value="{{ (ps.annual_price / 100)|round(2) if ps and ps.annual_price else 279 }}"
+                 placeholder="279">
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border)">
+        <h3 style="font-size:14px;font-weight:700;font-family:'Sora',sans-serif">Informations société</h3>
+
+        <div class="form-group">
+          <label class="form-label">Nom de la société</label>
+          <input type="text" name="company_name" class="form-input"
+                 value="{{ ps.company_name or '' if ps else '' }}" placeholder="ConstructLearn SAS">
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">SIRET</label>
+            <input type="text" name="siret" class="form-input"
+                   value="{{ ps.siret or '' if ps else '' }}" placeholder="000 000 000 00000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">N° TVA intracommunautaire</label>
+            <input type="text" name="vat_number" class="form-input"
+                   value="{{ ps.vat_number or '' if ps else '' }}" placeholder="FR00000000000">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          <i class="ti ti-check"></i> Enregistrer
+        </button>
+      </form>
+    </div>
+
+    <!-- Coordonnées bancaires -->
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-building-bank"></i> Coordonnées bancaires</div></div>
+      <form method="POST" style="display:flex;flex-direction:column;gap:16px">
+        <!-- Champs cachés pour ne pas écraser les tarifs -->
+        <input type="hidden" name="monthly_price" value="{{ (ps.monthly_price / 100) if ps and ps.monthly_price else 29 }}">
+        <input type="hidden" name="annual_price"  value="{{ (ps.annual_price  / 100) if ps and ps.annual_price  else 279 }}">
+        <input type="hidden" name="company_name"  value="{{ ps.company_name  or '' if ps else '' }}">
+        <input type="hidden" name="siret"          value="{{ ps.siret         or '' if ps else '' }}">
+        <input type="hidden" name="vat_number"     value="{{ ps.vat_number    or '' if ps else '' }}">
+
+        <div class="form-group">
+          <label class="form-label">Titulaire du compte</label>
+          <input type="text" name="bank_owner" class="form-input"
+                 value="{{ ps.bank_owner or '' if ps else '' }}" placeholder="Prénom Nom ou raison sociale">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom de la banque</label>
+          <input type="text" name="bank_name" class="form-input"
+                 value="{{ ps.bank_name or '' if ps else '' }}" placeholder="BNP Paribas, Société Générale…">
+        </div>
+        <div class="form-group">
+          <label class="form-label">IBAN</label>
+          <input type="text" name="iban" class="form-input"
+                 value="{{ ps.iban or '' if ps else '' }}" placeholder="FR76 0000 0000 0000 0000 0000 000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">BIC / SWIFT</label>
+          <input type="text" name="bic" class="form-input"
+                 value="{{ ps.bic or '' if ps else '' }}" placeholder="BNPAFRPPXXX">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email PayPal (optionnel)</label>
+          <input type="email" name="paypal_email" class="form-input"
+                 value="{{ ps.paypal_email or '' if ps else '' }}" placeholder="paiement@votreentreprise.fr">
+        </div>
+        <button type="submit" class="btn btn-primary">
+          <i class="ti ti-check"></i> Enregistrer
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

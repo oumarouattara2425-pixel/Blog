@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}{{ video.title }} — {{ course.title }}{% endblock %}
+{% block body_class %}player-page{% endblock %}
+{% block content %}
+<div class="player-layout">
+
+  <!-- Sidebar : liste des vidéos -->
+  <aside class="player-sidebar">
+    <div class="sidebar-course-title">{{ course.emoji }} {{ course.title }}</div>
+    {% if enrollment %}
+    <div class="sidebar-progress">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="sidebar-progress" style="width: {{ enrollment.progress }}%"></div>
+      </div>
+      <span id="sidebar-pct">{{ enrollment.progress }}%</span>
+    </div>
+    {% endif %}
+    <div class="sidebar-videos">
+      {% for v in videos %}
+      <a href="{{ url_for('courses.player', slug=course.slug, video_id=v.id) }}"
+         class="sidebar-video-item {% if v.id == video.id %}active{% endif %}">
+        <div class="sv-num">{{ loop.index }}</div>
+        <div class="sv-title">{{ v.title }}</div>
+        {% if v.duration %}<div class="sv-dur">{{ v.duration }}</div>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </aside>
+
+  <!-- Lecteur principal -->
+  <div class="player-main">
+    <div class="video-wrapper">
+      {% if video.video_type == 'url' and video.video_url %}
+        {% if 'vimeo' in video.video_url %}
+          {% set vimeo_id = video.video_url.split('/')[-1] %}
+          <iframe src="https://player.vimeo.com/video/{{ vimeo_id }}?color=4F80FF&title=0&byline=0"
+                  frameborder="0" allowfullscreen class="video-iframe"></iframe>
+        {% elif 'youtu' in video.video_url %}
+          {% set yt_id = video.video_url.split('v=')[-1].split('&')[0] if 'v=' in video.video_url else video.video_url.split('/')[-1] %}
+          <iframe src="https://www.youtube.com/embed/{{ yt_id }}"
+                  frameborder="0" allowfullscreen class="video-iframe"></iframe>
+        {% else %}
+          <video controls class="video-native" id="video-player">
+            <source src="{{ video.video_url }}">
+          </video>
+        {% endif %}
+      {% elif video.video_type == 'upload' and video.video_file %}
+        <video controls class="video-native" id="video-player"
+               src="{{ url_for('courses.stream_video', filename=video.video_file) }}">
+        </video>
+      {% else %}
+        <div class="video-placeholder">
+          <i class="ti ti-video-off"></i>
+          <p>Vidéo non disponible</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="player-meta">
+      <div>
+        <h1 class="player-title">{{ video.title }}</h1>
+        {% if video.description %}
+          <p class="player-desc">{{ video.description }}</p>
+        {% endif %}
+      </div>
+      <div class="player-actions">
+        {% if prev_video %}
+          <a href="{{ url_for('courses.player', slug=course.slug, video_id=prev_video.id) }}" class="btn btn-outline btn-sm">
+            <i class="ti ti-arrow-left"></i> Précédent
+          </a>
+        {% endif %}
+        {% if enrollment %}
+          <button class="btn btn-primary btn-sm" onclick="markCompleted()">
+            <i class="ti ti-check"></i> Marquer comme vu
+          </button>
+        {% endif %}
+        {% if next_video %}
+          <a href="{{ url_for('courses.player', slug=course.slug, video_id=next_video.id) }}" class="btn btn-primary btn-sm">
+            Suivant <i class="ti ti-arrow-right"></i>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Documents joints -->
+    {% if video.documents %}
+    <div class="player-docs">
+      <h3 class="docs-title"><i class="ti ti-paperclip"></i> Documents complémentaires</h3>
+      <div class="docs-list">
+        {% for doc in video.documents %}
+        <a href="{{ url_for('courses.download_doc', doc_id=doc.id) }}" class="doc-item" download>
+          <i class="ti ti-file-text"></i>
+          <span>{{ doc.filename }}</span>
+          {% if doc.file_size %}<span class="doc-size">{{ (doc.file_size / 1024)|round|int }} Ko</span>{% endif %}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const COURSE_ID = {{ course.id }};
+
+function markCompleted() {
+  fetch('/api/progression/{{ course.id }}', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ progress: 100 })
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('sidebar-progress').style.width = data.progress + '%';
+    document.getElementById('sidebar-pct').textContent = data.progress + '%';
+    if (data.completed) {
+      {% if next_video %}
+        setTimeout(() => { window.location = '{{ url_for("courses.player", slug=course.slug, video_id=next_video.id) }}'; }, 800);
+      {% endif %}
+    }
+  });
+}
+
+// Auto-progression : signaler 50% à mi-vidéo
+const vid = document.getElementById('video-player');
+if (vid) {
+  let sent50 = false;
+  vid.addEventListener('timeupdate', () => {
+    if (!sent50 && vid.duration && vid.currentTime / vid.duration > 0.5) {
+      sent50 = true;
+      fetch('/api/progression/{{ course.id }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ progress: 50 })
+      });
+    }
+  });
+}
+</script>
+{% endblock %}

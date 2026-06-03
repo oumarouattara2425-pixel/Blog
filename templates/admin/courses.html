@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Formations — Admin ConstructLearn Pro{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title"><i class="ti ti-settings"></i> Administration</h1>
+  </div>
+
+  <nav class="admin-nav">
+    <a href="{{ url_for('admin.dashboard') }}"        class="admin-nav-item"><i class="ti ti-chart-bar"></i> Dashboard</a>
+    <a href="{{ url_for('admin.courses') }}"           class="admin-nav-item active"><i class="ti ti-books"></i> Formations</a>
+    <a href="{{ url_for('admin.users') }}"             class="admin-nav-item"><i class="ti ti-users"></i> Utilisateurs</a>
+    <a href="{{ url_for('admin.subscriptions') }}"    class="admin-nav-item"><i class="ti ti-credit-card"></i> Abonnements</a>
+    <a href="{{ url_for('admin.payment_settings') }}" class="admin-nav-item"><i class="ti ti-building-bank"></i> Paiement</a>
+  </nav>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <h2 class="section-title" style="margin:0">{{ courses|length }} formation(s)</h2>
+    <a href="{{ url_for('admin.course_new') }}" class="btn btn-primary">
+      <i class="ti ti-plus"></i> Nouvelle formation
+    </a>
+  </div>
+
+  {% if courses %}
+  <div class="card" style="padding:0">
+    <table class="data-table">
+      <tr>
+        <th>Formation</th>
+        <th>Catégorie</th>
+        <th>Vidéos</th>
+        <th>Plan requis</th>
+        <th>Statut</th>
+        <th>Actions</th>
+      </tr>
+      {% for course in courses %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:1.5rem">{{ course.emoji }}</span>
+            <div>
+              <div class="table-name">{{ course.title }}</div>
+              <div class="table-email">{{ course.slug }}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="badge badge-monthly">{{ course.category_label }}</span></td>
+        <td>{{ course.video_count }}</td>
+        <td>
+          {% if course.plan_required == 'free' %}
+            <span class="badge badge-free">Gratuit</span>
+          {% else %}
+            <span class="badge badge-pro">Pro</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if course.published %}
+            <span class="badge badge-free"><i class="ti ti-eye"></i> Publié</span>
+          {% else %}
+            <span class="badge" style="background:#f3f4f6;color:#6b7280"><i class="ti ti-eye-off"></i> Brouillon</span>
+          {% endif %}
+        </td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <a href="{{ url_for('admin.course_edit', course_id=course.id) }}" class="btn btn-ghost btn-sm">
+              <i class="ti ti-pencil"></i> Modifier
+            </a>
+            <form method="POST" action="{{ url_for('admin.course_delete', course_id=course.id) }}" style="display:inline">
+              <button type="submit" class="btn btn-danger btn-sm"
+                      data-confirm="Supprimer « {{ course.title }} » et toutes ses vidéos ?">
+                <i class="ti ti-trash"></i>
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📚</div>
+    <h3>Aucune formation</h3>
+    <p>Créez votre première formation pour commencer.</p>
+    <a href="{{ url_for('admin.course_new') }}" class="btn btn-primary">
+      <i class="ti ti-plus"></i> Créer une formation
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

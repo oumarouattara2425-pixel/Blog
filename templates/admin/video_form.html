@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Modifier' if video else 'Nouvelle' }} vidéo — Admin{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title"><i class="ti ti-settings"></i> Administration</h1>
+  </div>
+
+  <nav class="admin-nav">
+    <a href="{{ url_for('admin.dashboard') }}"        class="admin-nav-item"><i class="ti ti-chart-bar"></i> Dashboard</a>
+    <a href="{{ url_for('admin.courses') }}"           class="admin-nav-item active"><i class="ti ti-books"></i> Formations</a>
+    <a href="{{ url_for('admin.users') }}"             class="admin-nav-item"><i class="ti ti-users"></i> Utilisateurs</a>
+    <a href="{{ url_for('admin.subscriptions') }}"    class="admin-nav-item"><i class="ti ti-credit-card"></i> Abonnements</a>
+    <a href="{{ url_for('admin.payment_settings') }}" class="admin-nav-item"><i class="ti ti-building-bank"></i> Paiement</a>
+  </nav>
+
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="{{ url_for('admin.course_edit', course_id=course.id) }}" class="btn btn-ghost btn-sm">
+      <i class="ti ti-arrow-left"></i> Retour à {{ course.title }}
+    </a>
+  </div>
+
+  <div class="card" style="max-width:700px">
+    <div class="card-header">
+      <div class="card-title">{{ 'Modifier la vidéo' if video else 'Ajouter une vidéo' }}</div>
+    </div>
+    <form method="POST" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:16px">
+
+      <div class="form-group">
+        <label class="form-label">Titre *</label>
+        <input type="text" name="title" class="form-input" required
+               value="{{ video.title if video else '' }}" placeholder="Ex : Leçon 1 — Introduction aux contraintes effectives">
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Durée</label>
+          <input type="text" name="duration" class="form-input"
+                 value="{{ video.duration if video else '' }}" placeholder="Ex : 45min">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ordre</label>
+          <input type="number" name="order_num" class="form-input" min="0"
+                 value="{{ video.order_num if video else next_order }}">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-input" rows="3"
+                  placeholder="Contenu abordé dans cette vidéo…" style="resize:vertical">{{ video.description if video else '' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">URL vidéo (Vimeo / YouTube / lien direct)</label>
+        <input type="url" name="video_url" class="form-input"
+               value="{{ video.video_url if video else '' }}"
+               placeholder="https://vimeo.com/123456789">
+        <small style="font-size:12px;color:var(--muted);margin-top:4px;display:block">
+          Ou uploadez un fichier ci-dessous (MP4, MOV, MKV…)
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Fichier vidéo (upload direct)</label>
+        <input type="file" name="video_file" class="form-input" accept="video/*">
+        {% if video and video.video_file %}
+          <small style="font-size:12px;color:var(--success);margin-top:4px;display:block">
+            <i class="ti ti-check"></i> Fichier actuel : {{ video.video_file }}
+          </small>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Documents joints (PDF, DOCX, PPTX…)</label>
+        <input type="file" name="documents" class="form-input" multiple accept=".pdf,.docx,.pptx,.xlsx,.zip,.txt">
+        {% if video and video.documents %}
+          <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
+            {% for doc in video.documents %}
+            <div style="font-size:12px;color:var(--muted)"><i class="ti ti-file"></i> {{ doc.filename }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px">
+        <label class="checkbox-label">
+          <input type="checkbox" name="is_preview" value="1" {{ 'checked' if video and video.is_preview }}>
+          Aperçu gratuit (visible sans abonnement)
+        </label>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button type="submit" class="btn btn-primary">
+          <i class="ti ti-check"></i> {{ 'Enregistrer' if video else 'Ajouter la vidéo' }}
+        </button>
+        <a href="{{ url_for('admin.course_edit', course_id=course.id) }}" class="btn btn-ghost">Annuler</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

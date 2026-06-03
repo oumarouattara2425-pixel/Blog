@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Abonnements — Admin ConstructLearn Pro{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title"><i class="ti ti-settings"></i> Administration</h1>
+  </div>
+
+  <nav class="admin-nav">
+    <a href="{{ url_for('admin.dashboard') }}"        class="admin-nav-item"><i class="ti ti-chart-bar"></i> Dashboard</a>
+    <a href="{{ url_for('admin.courses') }}"           class="admin-nav-item"><i class="ti ti-books"></i> Formations</a>
+    <a href="{{ url_for('admin.users') }}"             class="admin-nav-item"><i class="ti ti-users"></i> Utilisateurs</a>
+    <a href="{{ url_for('admin.subscriptions') }}"    class="admin-nav-item active"><i class="ti ti-credit-card"></i> Abonnements</a>
+    <a href="{{ url_for('admin.payment_settings') }}" class="admin-nav-item"><i class="ti ti-building-bank"></i> Paiement</a>
+  </nav>
+
+  <!-- KPIs MRR/ARR -->
+  <div class="kpi-grid" style="margin-bottom:28px">
+    <div class="kpi-card">
+      <i class="ti ti-users kpi-icon" style="color:#4F80FF"></i>
+      <div class="kpi-value">{{ nmo }}</div>
+      <div class="kpi-label">Abonnés mensuels</div>
+    </div>
+    <div class="kpi-card">
+      <i class="ti ti-crown kpi-icon" style="color:#F59E0B"></i>
+      <div class="kpi-value">{{ nan }}</div>
+      <div class="kpi-label">Abonnés annuels</div>
+    </div>
+    <div class="kpi-card">
+      <i class="ti ti-currency-euro kpi-icon" style="color:#10B981"></i>
+      <div class="kpi-value">{{ mrr }} €</div>
+      <div class="kpi-label">MRR estimé</div>
+    </div>
+    <div class="kpi-card">
+      <i class="ti ti-trending-up kpi-icon" style="color:#10B981"></i>
+      <div class="kpi-value">{{ arr }} €</div>
+      <div class="kpi-label">ARR estimé</div>
+    </div>
+  </div>
+
+  <div class="admin-cols">
+    <!-- Abonnés actifs -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Abonnés actifs</div></div>
+      <table class="data-table">
+        <tr><th>Membre</th><th>Plan</th><th>Statut</th><th>Action</th></tr>
+        {% for u in subs %}
+        <tr>
+          <td>
+            <div class="table-user">
+              <div class="table-avatar">{{ u.initials }}</div>
+              <div>
+                <div class="table-name">{{ u.full_name }}</div>
+                <div class="table-email">{{ u.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-{{ u.plan }}">{{ u.plan }}</span></td>
+          <td>
+            {% if u.plan_status == 'active' %}
+              <span style="color:var(--success);font-size:12px"><i class="ti ti-circle-check"></i> Actif</span>
+            {% elif u.plan_status == 'past_due' %}
+              <span style="color:var(--danger);font-size:12px"><i class="ti ti-alert-circle"></i> Impayé</span>
+            {% else %}
+              <span style="color:var(--muted);font-size:12px">{{ u.plan_status }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <form method="POST" action="{{ url_for('admin.cancel_sub', user_id=u.id) }}" style="display:inline">
+              <button type="submit" class="btn btn-danger btn-sm"
+                      data-confirm="Annuler l'abonnement de {{ u.full_name }} ?">
+                <i class="ti ti-x"></i> Annuler
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+        {% if not subs %}
+        <tr><td colspan="4" class="table-empty">Aucun abonné.</td></tr>
+        {% endif %}
+      </table>
+    </div>
+
+    <!-- Derniers paiements -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Derniers paiements</div></div>
+      <table class="data-table">
+        <tr><th>Membre</th><th>Plan</th><th>Montant</th><th>Date</th></tr>
+        {% for p in payments %}
+        <tr>
+          <td>{{ p.user.full_name if p.user else '—' }}</td>
+          <td><span class="badge badge-{{ p.plan }}">{{ p.plan }}</span></td>
+          <td class="table-amount">{{ "%.2f"|format(p.amount_euros) }} €</td>
+          <td class="table-date">{{ p.created_at.strftime('%d/%m/%Y') }}</td>
+        </tr>
+        {% endfor %}
+        {% if not payments %}
+        <tr><td colspan="4" class="table-empty">Aucun paiement.</td></tr>
+        {% endif %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

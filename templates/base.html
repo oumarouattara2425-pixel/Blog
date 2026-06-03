@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ConstructLearn Pro{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+<!-- ── NAV ───────────────────────────────────────────────── -->
+<nav class="navbar">
+  <a href="{{ url_for('main.index') }}" class="nav-brand">
+    <span class="nav-logo">🏗️</span>
+    <span>ConstructLearn <strong>Pro</strong></span>
+  </a>
+  <div class="nav-links">
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('courses.index') }}" class="nav-link">Formations</a>
+      {% if current_user.is_admin %}
+        <a href="{{ url_for('admin.dashboard') }}" class="nav-link nav-admin">
+          <i class="ti ti-settings"></i> Admin
+        </a>
+      {% endif %}
+      {% if not current_user.is_pro and not current_user.is_admin %}
+        <a href="{{ url_for('billing.plans') }}" class="btn btn-primary btn-sm">
+          <i class="ti ti-crown"></i> Passer Pro
+        </a>
+      {% endif %}
+      <div class="nav-avatar-menu">
+        <button class="nav-avatar" onclick="toggleUserMenu()">
+          {{ current_user.initials }}
+        </button>
+        <div class="user-menu" id="user-menu">
+          <div class="user-menu-header">
+            <div class="user-menu-name">{{ current_user.full_name }}</div>
+            <div class="user-menu-email">{{ current_user.email }}</div>
+            {% if current_user.is_pro %}
+              <span class="badge badge-pro">Pro</span>
+            {% endif %}
+          </div>
+          <a href="{{ url_for('main.dashboard') }}"  class="user-menu-item"><i class="ti ti-layout-dashboard"></i> Tableau de bord</a>
+          <a href="{{ url_for('main.profile') }}"    class="user-menu-item"><i class="ti ti-user"></i> Mon profil</a>
+          {% if current_user.is_pro %}
+            <a href="{{ url_for('billing.portal') }}" class="user-menu-item"><i class="ti ti-credit-card"></i> Gérer l'abonnement</a>
+          {% endif %}
+          <hr class="menu-divider">
+          <a href="{{ url_for('auth.logout') }}" class="user-menu-item user-menu-logout"><i class="ti ti-logout"></i> Déconnexion</a>
+        </div>
+      </div>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}"    class="nav-link">Connexion</a>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Commencer</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- ── FLASH MESSAGES ─────────────────────────────────────── -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">
+          <i class="ti ti-{% if category == 'success' %}check{% elif category == 'error' %}alert-circle{% elif category == 'warning' %}alert-triangle{% else %}info-circle{% endif %}"></i>
+          {{ message }}
+          <button class="flash-close" onclick="this.parentElement.remove()">×</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- ── CONTENU ─────────────────────────────────────────────── -->
+<main class="main-content">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ── FOOTER ─────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div>© {{ 2025 }} ConstructLearn Pro · Géotechnique · BIM · Travaux Publics</div>
+    <div class="footer-links">
+      <a href="#">Mentions légales</a>
+      <a href="#">CGV</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ course.title }} — ConstructLearn Pro{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="course-detail-header">
+    <div class="course-detail-thumb" style="background: var(--cat-{{ course.category }})">
+      {% if course.thumbnail_url %}
+        <img src="{{ course.thumbnail_url }}" alt="{{ course.title }}">
+      {% else %}
+        <span style="font-size:4rem">{{ course.emoji }}</span>
+      {% endif %}
+    </div>
+    <div class="course-detail-info">
+      <span class="course-cat">{{ course.category_label }}</span>
+      <h1 class="course-detail-title">{{ course.title }}</h1>
+      <p class="course-detail-desc">{{ course.description }}</p>
+      <div class="course-meta-row">
+        <span><i class="ti ti-video"></i> {{ course.video_count }} vidéos</span>
+        <span><i class="ti ti-clock"></i> {{ course.duration or '—' }}</span>
+        <span><i class="ti ti-users"></i> {{ course.students_count }} apprenants</span>
+      </div>
+      {% if not can_access %}
+        <div class="locked-banner">
+          <i class="ti ti-lock"></i>
+          <div>
+            <strong>Formation réservée aux abonnés Pro</strong><br>
+            <a href="{{ url_for('billing.plans') }}">Voir les offres →</a>
+          </div>
+        </div>
+      {% elif not enrollment %}
+        <form method="POST" action="{{ url_for('courses.enroll', slug=course.slug) }}">
+          <button type="submit" class="btn btn-primary">
+            <i class="ti ti-player-play"></i> Commencer la formation
+          </button>
+        </form>
+      {% else %}
+        {% set first_video = videos[0] if videos else None %}
+        {% if first_video %}
+          <a href="{{ url_for('courses.player', slug=course.slug, video_id=first_video.id) }}" class="btn btn-primary">
+            <i class="ti ti-player-play"></i> Continuer ({{ enrollment.progress }}%)
+          </a>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Programme -->
+  <div class="section">
+    <h2 class="section-title">Programme du cours</h2>
+    <div class="syllabus">
+      {% for video in videos %}
+      <div class="syllabus-item {% if not can_access and not video.is_preview %}syllabus-locked{% endif %}">
+        <div class="syllabus-num">{{ loop.index }}</div>
+        <div class="syllabus-info">
+          <div class="syllabus-title">
+            {% if video.is_preview %}<span class="badge badge-free">Aperçu gratuit</span> {% endif %}
+            {{ video.title }}
+          </div>
+          <div class="syllabus-meta">{{ video.duration or '' }}</div>
+        </div>
+        <div class="syllabus-action">
+          {% if can_access or video.is_preview %}
+            <a href="{{ url_for('courses.player', slug=course.slug, video_id=video.id) }}" class="btn btn-outline btn-sm">
+              <i class="ti ti-player-play"></i>
+            </a>
+          {% else %}
+            <i class="ti ti-lock" style="color: var(--mu)"></i>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

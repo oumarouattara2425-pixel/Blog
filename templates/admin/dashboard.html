@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Admin — ConstructLearn Pro{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title"><i class="ti ti-settings"></i> Administration</h1>
+  </div>
+
+  <!-- Nav admin -->
+  <nav class="admin-nav">
+    <a href="{{ url_for('admin.dashboard') }}"       class="admin-nav-item active"><i class="ti ti-chart-bar"></i> Dashboard</a>
+    <a href="{{ url_for('admin.courses') }}"          class="admin-nav-item"><i class="ti ti-books"></i> Formations</a>
+    <a href="{{ url_for('admin.users') }}"            class="admin-nav-item"><i class="ti ti-users"></i> Utilisateurs</a>
+    <a href="{{ url_for('admin.subscriptions') }}"   class="admin-nav-item"><i class="ti ti-credit-card"></i> Abonnements</a>
+    <a href="{{ url_for('admin.payment_settings') }}" class="admin-nav-item"><i class="ti ti-building-bank"></i> Paiement</a>
+  </nav>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <i class="ti ti-users kpi-icon" style="color:#4F80FF"></i>
+      <div class="kpi-value">{{ stats.users }}</div>
+      <div class="kpi-label">Membres inscrits</div>
+    </div>
+    <div class="kpi-card">
+      <i class="ti ti-crown kpi-icon" style="color:#F59E0B"></i>
+      <div class="kpi-value">{{ stats.pro }}</div>
+      <div class="kpi-label">Abonnés Pro</div>
+      <div class="kpi-sub">{{ stats.monthly }} mensuel · {{ stats.annual }} annuel</div>
+    </div>
+    <div class="kpi-card">
+      <i class="ti ti-books kpi-icon" style="color:#10B981"></i>
+      <div class="kpi-value">{{ stats.courses }}</div>
+      <div class="kpi-label">Formations</div>
+      <div class="kpi-sub">{{ stats.videos }} vidéos</div>
+    </div>
+    <div class="kpi-card">
+      <i class="ti ti-currency-euro kpi-icon" style="color:#10B981"></i>
+      <div class="kpi-value">{{ "%.0f"|format(stats.revenue / 100) }} €</div>
+      <div class="kpi-label">Revenus totaux</div>
+    </div>
+  </div>
+
+  <div class="admin-cols">
+    <!-- Derniers inscrits -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Derniers inscrits</div>
+        <a href="{{ url_for('admin.users') }}" class="card-link">Voir tous →</a>
+      </div>
+      <table class="data-table">
+        <tr><th>Nom</th><th>Plan</th><th>Inscrit le</th></tr>
+        {% for u in recent_users %}
+        <tr>
+          <td>
+            <div class="table-user">
+              <div class="table-avatar">{{ u.initials }}</div>
+              <div>
+                <div class="table-name">{{ u.full_name }}</div>
+                <div class="table-email">{{ u.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-{{ u.plan }}">{{ u.plan }}</span></td>
+          <td class="table-date">{{ u.created_at.strftime('%d/%m/%Y') }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <!-- Derniers paiements -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Derniers paiements</div>
+        <a href="{{ url_for('admin.subscriptions') }}" class="card-link">Voir tous →</a>
+      </div>
+      <table class="data-table">
+        <tr><th>Membre</th><th>Montant</th><th>Date</th></tr>
+        {% for p in recent_payments %}
+        <tr>
+          <td>{{ p.user.full_name if p.user else '—' }}</td>
+          <td class="table-amount">{{ "%.2f"|format(p.amount_euros) }} €</td>
+          <td class="table-date">{{ p.created_at.strftime('%d/%m/%Y') }}</td>
+        </tr>
+        {% endfor %}
+        {% if not recent_payments %}
+        <tr><td colspan="3" class="table-empty">Aucun paiement enregistré</td></tr>
+        {% endif %}
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

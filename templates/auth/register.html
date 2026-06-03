@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Inscription — ConstructLearn Pro{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-logo">🏗️</div>
+    <h1 class="auth-title">Créer un compte</h1>
+    <p class="auth-sub">Commencez gratuitement, passez Pro à tout moment</p>
+    <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form">
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label">Prénom</label>
+          <input class="form-input" type="text" name="first_name" required
+                 placeholder="Jean" value="{{ request.form.get('first_name', '') }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom</label>
+          <input class="form-input" type="text" name="last_name" required
+                 placeholder="Dupont" value="{{ request.form.get('last_name', '') }}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Adresse email</label>
+        <input class="form-input" type="email" name="email" required
+               placeholder="vous@exemple.com" value="{{ request.form.get('email', '') }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe <span class="hint">(8 caractères min.)</span></label>
+        <div class="input-with-icon">
+          <input class="form-input" type="password" name="password" id="pw" required
+                 placeholder="••••••••" minlength="8">
+          <button type="button" class="toggle-pw" onclick="togglePw()"><i class="ti ti-eye" id="pw-icon"></i></button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" required>
+          J'accepte les <a href="#">CGV</a> et la <a href="#">politique de confidentialité</a>
+        </label>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Créer mon compte</button>
+    </form>
+    <p class="auth-switch">Déjà un compte ?
+      <a href="{{ url_for('auth.login') }}">Se connecter</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function togglePw() {
+  const pw = document.getElementById('pw');
+  const ic = document.getElementById('pw-icon');
+  pw.type = pw.type === 'password' ? 'text' : 'password';
+  ic.className = pw.type === 'password' ? 'ti ti-eye' : 'ti ti-eye-off';
+}
+</script>
+{% endblock %}
